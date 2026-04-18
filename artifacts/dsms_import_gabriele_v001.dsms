@@ -1,0 +1,946 @@
+{
+  "schemaVersion": 1,
+  "kind": "backup",
+  "exportedAt": "2026-04-10T22:30:00Z",
+  "profile": {
+    "name": "Gabriele",
+    "sex": "male",
+    "ageYears": 36,
+    "heightCm": 170.0,
+    "baselineWeightKg": 76.0,
+    "baselineWaistCm": 99.0,
+    "activityLevel": "moderatelyActive"
+  },
+  "checkIns": [
+    {
+      "date": "2026-02-24T00:00:00.000",
+      "energyBalanceKcal": -550,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Chicken breast", "Mashed potatoes + butter", "Cabbage"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-02-25T00:00:00.000",
+      "energyBalanceKcal": -900,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Chicken livers", "Potatoes"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Chicken breast", "Egg", "Vegetables", "Bread 40 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-02-26T00:00:00.000",
+      "energyBalanceKcal": -620,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Cotoletta", "Mashed potatoes", "Salami"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Dentice fish", "Zucchini", "Primo sale cheese", "Baguette"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-02-27T00:00:00.000",
+      "energyBalanceKcal": 815,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Milk", "Biscuits", "Almonds", "Orange juice"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta with clams and zucchini"]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Bruschetta with lardo",
+            "Beef steak",
+            "Caponata",
+            "Wine",
+            "Cheesecake",
+            "Genziana"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-02-28T00:00:00.000",
+      "energyBalanceKcal": 0,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino", "Almonds"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Entrecote", "Bread 60 g", "Spinach with oil"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Beef filet", "Mashed potatoes + butter", "Chicory", "Wine"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-01T00:00:00.000",
+      "energyBalanceKcal": -820,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Almonds", "Biscuits", "Grapefruit juice", "Milk + honey"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta 80 g with vegetables", "Spinach", "Peppers", "Egg", "Wine"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Chicken bites", "Vegetables"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-02T00:00:00.000",
+      "energyBalanceKcal": -810,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino", "Chocolate"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Two hamburgers", "Spinach and radicchio", "Bread 60 g", "Wine"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Cernia fish", "Salad", "Bread 40 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-03T00:00:00.000",
+      "energyBalanceKcal": -385,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Coffee", "Almonds", "Rusks", "Biscuits", "Milk"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Beef filet", "Spinach + oil", "Bread 40 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Ground beef", "Eggs x2", "Bread 60 g", "Vegetables"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-04T00:00:00.000",
+      "energyBalanceKcal": -1060,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Puntarelle with anchovies", "Boiled beef"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Cernia fish", "Eggs x2", "Tomatoes", "Olive oil", "Bread 40 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-05T00:00:00.000",
+      "energyBalanceKcal": -330,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Meatloaf", "Chicory + oil", "Bread 40 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Cheese",
+            "Ricotta",
+            "Octopus salad",
+            "Sea bream",
+            "Potato",
+            "Zucchini",
+            "Bread",
+            "Wine"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-06T00:00:00.000",
+      "energyBalanceKcal": -550,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Egg", "Sugar"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta with anchovies", "Beef stew with potatoes", "Bread 60 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["McBurger Deluxe", "Fries", "Water"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-07T00:00:00.000",
+      "energyBalanceKcal": -510,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "dinner",
+          "items": ["Chicken bites", "Cheese", "Bread", "Wine"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-08T00:00:00.000",
+      "energyBalanceKcal": 160,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "lunch",
+          "items": ["Spaghetti vongole", "Swordfish", "Pastries"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-09T00:00:00.000",
+      "energyBalanceKcal": -650,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "lunch",
+          "items": ["Swordfish lunch"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Beef dinner"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-10T00:00:00.000",
+      "energyBalanceKcal": -600,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "lunch",
+          "items": ["Omelette lunch", "Parmesan snack"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Meat dinner"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-11T00:00:00.000",
+      "energyBalanceKcal": 60,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "lunch",
+          "items": ["Pizza buffet", "Cake", "Drinks"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-12T00:00:00.000",
+      "energyBalanceKcal": -400,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "lunch",
+          "items": ["Pork lunch"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Fish dinner", "Potatoes"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-22T00:00:00.000",
+      "energyBalanceKcal": -2200,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)", "Cornetto"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Tuna + cherry tomatoes", "Bread 60 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Fish fillets", "Zucchini", "Bread 50 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-23T00:00:00.000",
+      "energyBalanceKcal": -1400,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Coffee (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta aglio e olio (80 g)", "Alici"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Omelette (4 eggs) with onions", "Bread 40 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-24T00:00:00.000",
+      "energyBalanceKcal": -1550,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pollo al sugo con peperoni", "Bread 40 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Pollo con peperoni", "Bread 60 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-25T00:00:00.000",
+      "energyBalanceKcal": -200,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta gricia 90 g", "Parmigiano e pecorino"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Big Arch", "Patatine fritte", "Acqua"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-26T00:00:00.000",
+      "energyBalanceKcal": -300,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": [
+            "2 rotoli di frittata al forno con spinaci e formaggio",
+            "Puntarelle",
+            "Fagiolini",
+            "Pane 60 g"
+          ]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Ricottina e pomodorini",
+            "Pane 90-100 g",
+            "Gallinella al forno con patate",
+            "2 bicchieri di vino"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-27T00:00:00.000",
+      "energyBalanceKcal": -700,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": true,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": [
+            "Uovo sbattuto con zucchero",
+            "Latte scremato",
+            "2 biscotti ai cereali e cacao"
+          ]
+        },
+        {
+          "slot": "lunch",
+          "items": [
+            "4 fette di mozzarella, avocado e pomodorini",
+            "Baguette 20-30 g",
+            "Pasta 80 g",
+            "Ricotta e zucchine",
+            "Mezzo bicchiere di vino",
+            "Workout intenso 2 ore"
+          ]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "2 filetti di pesce",
+            "Pomodori e pomodorini",
+            "Olio e sale a parte",
+            "Pane 40 g"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-28T00:00:00.000",
+      "energyBalanceKcal": 850,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)", "Mandorle (manciata)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Filetto di scottona", "Insalata", "Pane 50 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Cena sociale con amici",
+            "2 birre",
+            "Wurstel bianchi tedeschi al piatto",
+            "Crauti",
+            "Patatine fritte",
+            "Aperitivo con pistacchi",
+            "3 pepite di pollo fritte",
+            "1 oliva ascolana"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-29T00:00:00.000",
+      "energyBalanceKcal": 1800,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino con zucchero", "Cornetto"]
+        },
+        {
+          "slot": "lunch",
+          "items": [
+            "Pranzo super-sociale senza remore",
+            "4-5 fettine di pane con salse tipo hummus / bruschettine",
+            "Pasta con i lupini 150 g circa",
+            "3 gamberoni alla piastra",
+            "Calamaro alla piastra ripieno a base di legumi",
+            "2 bicchieri di vino",
+            "3 bicchierini di genziana",
+            "2 cookie belgi tipo waffer con un lato al cioccolato"
+          ]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Cena saltata (nessuna fame)"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-30T00:00:00.000",
+      "energyBalanceKcal": -780,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": true,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Latte", "Caffe", "10 mandorle", "2 fette biscottate"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta aglio, olio e peperoncino 90 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Doppio workout pump + prebox",
+            "Filetto di manzo",
+            "Spinaci",
+            "Pane 40 g",
+            "Formaggio Brie (1 fetta)"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-03-31T00:00:00.000",
+      "energyBalanceKcal": -350,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Latte", "Mandorle", "Caffe", "2 fette biscottate non farcite"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Frittata con cipolle (4 uova)", "4 ovoline di mozzarella", "Pane 60 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["2 fettine di scottona", "6 ovoline di mozzarella", "Pane 50 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-01T00:00:00.000",
+      "energyBalanceKcal": -700,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": true,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta al tonno 100 g", "Olio (2 cucchiai)"]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Prebox 1h (20:30)",
+            "Petto di pollo 200-300 g (post workout)",
+            "Asparagi",
+            "Pane 100 g"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-02T00:00:00.000",
+      "energyBalanceKcal": 150,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": [
+            "Pranzo con colleghi",
+            "Pasta amatriciana",
+            "Fettina panata",
+            "3 patate al forno",
+            "Verza",
+            "Pranzo percepito come alto"
+          ]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Cena sociale prevista con la ragazza",
+            "Base di pesce",
+            "Parziale 02/04/2026: bilancio ancora provvisorio",
+            "Strategia implicita: cena pulita, poco pane, attenzione a vino e fritti"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-03T00:00:00.000",
+      "energyBalanceKcal": -500,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": true,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Latte (no sugar)", "10 mandorle", "2 biscotti ai cereali", "Fragole"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta aglio e olio 80 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Pump + Prebox 2h", "Fettine di scottona", "Pane 80 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-04T00:00:00.000",
+      "energyBalanceKcal": -250,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Muscolo di bovino", "Insalata"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["2 uova", "Spinaci", "Pane 100 g", "Formaggio spalmabile Nonno Nanni 50 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-05T00:00:00.000",
+      "energyBalanceKcal": 1300,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Latte", "Mandorle", "2 fette biscottate", "Marmellata"]
+        },
+        {
+          "slot": "lunch",
+          "items": [
+            "Pranzo pasquale",
+            "Ricotta",
+            "2 fette prosciutto",
+            "2 fette salame",
+            "Tonnarelli carciofi e guanciale 80-90 g",
+            "Abbacchio",
+            "3 bruschette",
+            "1 bicchiere di vino",
+            "2 cucchiai di tiramisu"
+          ]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Verdura di campo al vapore", "2 fettine panate"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-06T00:00:00.000",
+      "energyBalanceKcal": -150,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)", "Treccia con noci"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta 80 g con alici", "Formaggio spalmabile Nonno Nanni", "Agretti", "Pane 60 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Filetto", "Patate al vapore", "Filetto", "Pane 40 g"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-07T00:00:00.000",
+      "energyBalanceKcal": -450,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Latte (no sugar)", "Caffe (no sugar)", "Mandorle", "2 fette biscottate", "1 con marmellata"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Petto di pollo al limone", "Insalata", "Pane 60 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["PREVISIONE", "Proteine", "Verdure", "Senza pane"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-08T00:00:00.000",
+      "energyBalanceKcal": -400,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Latte (no sugar)", "Caffe (no sugar)", "Mandorle", "Fetta biscottata"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta al tonno 100 g (in bianco)"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["Filetto di manzo", "Insalata", "Pane 40 g", "No workout"]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-09T00:00:00.000",
+      "energyBalanceKcal": 300,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": false,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Osso buco", "Carote dolci"]
+        },
+        {
+          "slot": "dinner",
+          "items": [
+            "Alici fritte",
+            "Mezza porzione paccheri al sugo con calamari",
+            "Calamari alla griglia",
+            "Cicoria",
+            "Alici",
+            "Calice di vino bianco",
+            "Jagermeister"
+          ]
+        }
+      ],
+      "note": null
+    },
+    {
+      "date": "2026-04-10T00:00:00.000",
+      "energyBalanceKcal": -800,
+      "weightKg": null,
+      "waistCm": null,
+      "hasStructuredMealLog": true,
+      "hasTraining": true,
+      "mealSections": [
+        {
+          "slot": "breakfast",
+          "items": ["Cappuccino (no sugar)"]
+        },
+        {
+          "slot": "lunch",
+          "items": ["Pasta 80 g"]
+        },
+        {
+          "slot": "dinner",
+          "items": ["PREVISIONE", "Workout pump + prebox 2h", "Carne", "Cena pulita post workout"]
+        }
+      ],
+      "note": null
+    }
+  ],
+  "assessments": [],
+  "assessmentSeed": {
+    "createdAt": "2026-02-24T08:00:00Z",
+    "habits": {
+      "mealsPerDay": 3,
+      "weeklyTrainingSessions": 4,
+      "weeklyFlexibleMeals": 2,
+      "breakfastIsLight": true,
+      "usuallyHasStructuredLunch": true,
+      "eatingOutFrequency": "sometimes",
+      "alcoholFrequency": "sometimes",
+      "liquidCaloriesFrequency": "rarely",
+      "sweetsFrequency": "sometimes",
+      "refinedCarbsFrequency": "often",
+      "eveningHungerFrequency": "sometimes"
+    },
+    "label": "manual_import_seed_gabriele_v001"
+  }
+}

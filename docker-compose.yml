@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dsms_grabber_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dsms_grabber
+      POSTGRES_USER: grabber
+      POSTGRES_PASSWORD: grabber_pw
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  pgdata:

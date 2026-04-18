@@ -1,0 +1,11 @@
+it\dsms\grabber\crea\CreaDetailScraper.class
+it\dsms\grabber\crea\CreaIdFetcher.class
+it\dsms\grabber\db\PostgresConnector.class
+it\dsms\grabber\export\DsmsExporter.class
+it\dsms\grabber\yazio\YazioFood.class
+it\dsms\grabber\crea\CreaFood.class
+it\dsms\grabber\export\DsmsRecord.class
+it\dsms\grabber\Main.class
+it\dsms\grabber\yazio\YazioScraper.class
+it\dsms\grabber\export\DsmsExportManifest.class
+it\dsms\grabber\Main$DbHandle.class
