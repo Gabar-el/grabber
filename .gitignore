@@ -46,6 +46,6 @@ app.*.map.json
 /android/local.properties
 
 #Base knowledge
-/bk
-/artifacts
-/.claude
+bk
+artifacts
+.claude
