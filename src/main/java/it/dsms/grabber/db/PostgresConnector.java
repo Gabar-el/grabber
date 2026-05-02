@@ -1,6 +1,8 @@
 package it.dsms.grabber.db;
 
 import it.dsms.grabber.crea.CreaFood;
+import it.dsms.grabber.curated.DishAmbiguityRule;
+import it.dsms.grabber.curated.MealContextCorrection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -59,6 +61,67 @@ public class PostgresConnector {
         }
     }
 
+    public void upsertRule(DishAmbiguityRule r) throws SQLException {
+        String sql = """
+                INSERT INTO dish_ambiguity_rules
+                    (rule_id, target_kind, target_value, threshold_ratio,
+                     correction_factor, range_min_factor, range_max_factor,
+                     confidence_penalty, note_template, source_ref)
+                VALUES (?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT (rule_id) DO UPDATE SET
+                    target_kind        = EXCLUDED.target_kind,
+                    target_value       = EXCLUDED.target_value,
+                    threshold_ratio    = EXCLUDED.threshold_ratio,
+                    correction_factor  = EXCLUDED.correction_factor,
+                    range_min_factor   = EXCLUDED.range_min_factor,
+                    range_max_factor   = EXCLUDED.range_max_factor,
+                    confidence_penalty = EXCLUDED.confidence_penalty,
+                    note_template      = EXCLUDED.note_template,
+                    source_ref         = EXCLUDED.source_ref,
+                    curated_at         = now()
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, r.ruleId);
+            ps.setString(2, r.targetKind);
+            ps.setString(3, r.targetValue);
+            ps.setDouble(4, r.thresholdRatio);
+            ps.setDouble(5, r.correctionFactor);
+            ps.setDouble(6, r.rangeMinFactor);
+            ps.setDouble(7, r.rangeMaxFactor);
+            ps.setInt(8,    r.confidencePenalty);
+            ps.setString(9, r.noteTemplate);
+            ps.setString(10, r.sourceRef);
+            ps.executeUpdate();
+        }
+    }
+
+    public void upsertCorrection(MealContextCorrection c) throws SQLException {
+        String sql = """
+                INSERT INTO meal_context_corrections
+                    (context, kcal_multiplier, flat_extra_per_meal, range_widen_pct,
+                     confidence_penalty, note_template, source_ref)
+                VALUES (?,?,?,?,?,?,?)
+                ON CONFLICT (context) DO UPDATE SET
+                    kcal_multiplier     = EXCLUDED.kcal_multiplier,
+                    flat_extra_per_meal = EXCLUDED.flat_extra_per_meal,
+                    range_widen_pct     = EXCLUDED.range_widen_pct,
+                    confidence_penalty  = EXCLUDED.confidence_penalty,
+                    note_template       = EXCLUDED.note_template,
+                    source_ref          = EXCLUDED.source_ref,
+                    curated_at          = now()
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, c.context);
+            ps.setDouble(2, c.kcalMultiplier);
+            ps.setDouble(3, c.flatExtraPerMeal);
+            ps.setDouble(4, c.rangeWidenPct);
+            ps.setInt(5,    c.confidencePenalty);
+            ps.setString(6, c.noteTemplate);
+            ps.setString(7, c.sourceRef);
+            ps.executeUpdate();
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Read
     // -------------------------------------------------------------------------
@@ -88,6 +151,54 @@ public class PostgresConnector {
                 f.waterG    = nullableDouble(rs, "water_g");
                 f.portionG  = nullableDouble(rs, "portion_g");
                 result.add(f);
+            }
+        }
+        return result;
+    }
+
+    public List<DishAmbiguityRule> findAllRules() throws SQLException {
+        String sql = "SELECT rule_id, target_kind, target_value, threshold_ratio, " +
+                     "correction_factor, range_min_factor, range_max_factor, " +
+                     "confidence_penalty, note_template, source_ref " +
+                     "FROM dish_ambiguity_rules ORDER BY rule_id";
+        List<DishAmbiguityRule> result = new ArrayList<>();
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                DishAmbiguityRule r = new DishAmbiguityRule();
+                r.ruleId            = rs.getString("rule_id");
+                r.targetKind        = rs.getString("target_kind");
+                r.targetValue       = rs.getString("target_value");
+                r.thresholdRatio    = rs.getDouble("threshold_ratio");
+                r.correctionFactor  = rs.getDouble("correction_factor");
+                r.rangeMinFactor    = rs.getDouble("range_min_factor");
+                r.rangeMaxFactor    = rs.getDouble("range_max_factor");
+                r.confidencePenalty = rs.getInt("confidence_penalty");
+                r.noteTemplate      = rs.getString("note_template");
+                r.sourceRef         = rs.getString("source_ref");
+                result.add(r);
+            }
+        }
+        return result;
+    }
+
+    public List<MealContextCorrection> findAllCorrections() throws SQLException {
+        String sql = "SELECT context, kcal_multiplier, flat_extra_per_meal, range_widen_pct, " +
+                     "confidence_penalty, note_template, source_ref " +
+                     "FROM meal_context_corrections ORDER BY context";
+        List<MealContextCorrection> result = new ArrayList<>();
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                MealContextCorrection c = new MealContextCorrection();
+                c.context           = rs.getString("context");
+                c.kcalMultiplier    = rs.getDouble("kcal_multiplier");
+                c.flatExtraPerMeal  = rs.getDouble("flat_extra_per_meal");
+                c.rangeWidenPct     = rs.getDouble("range_widen_pct");
+                c.confidencePenalty = rs.getInt("confidence_penalty");
+                c.noteTemplate      = rs.getString("note_template");
+                c.sourceRef         = rs.getString("source_ref");
+                result.add(c);
             }
         }
         return result;
