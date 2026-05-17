@@ -51,11 +51,17 @@ public class CurateRecipeCommand {
             System.out.println("[2/6] Caricamento target: " + targetId);
             target = db.findRecipeTargetById(targetId);
             if (target == null) {
-                System.err.println("WARN: target_id '" + targetId + "' non trovato nel DB. Procedo senza hint refs.");
-            } else {
-                hintRefs = target.creaRefs;
-                System.out.println("      " + hintRefs.size() + " hint refs trovati.");
+                // Fail fast: evita di sprecare la chiamata LLM e il crash sulla FK
+                System.err.println("ERRORE: target_id '" + targetId + "' non trovato in curated_recipe_targets.");
+                System.err.println("       Verifica il target_id con:");
+                System.err.println("         docker exec dsms_grabber_db psql -U grabber -d dsms_grabber \\");
+                System.err.println("           -c \"SELECT target_id, dish_query FROM curated_recipe_targets");
+                System.err.println("               WHERE dish_query ILIKE '%" + dishName.replace("'", "''") + "%' LIMIT 10;\"");
+                System.err.println("       Oppure ometti --target-id per procedere senza hint refs.");
+                throw new IllegalArgumentException("target_id non trovato: " + targetId);
             }
+            hintRefs = target.creaRefs;
+            System.out.println("      " + hintRefs.size() + " hint refs trovati.");
         } else {
             System.out.println("[2/6] Nessun --target-id specificato, procedo senza hint refs.");
         }
@@ -124,7 +130,15 @@ public class CurateRecipeCommand {
             ing.sortOrder         = sortOrder++;
 
             IngredientMatcher.MatchResult match = matcher.match(ingName, hintRefs);
-            if (match != null) {
+            if (match != null && "ignorable".equals(match.method)) {
+                // Condimento trascurabile (sale, acqua...): 0 kcal, 0 peso, non conta come unmatched
+                ing.matchMethod     = "ignorable";
+                ing.matchConfidence = 1.0;
+                ing.yieldFactor     = 0.0;
+                ing.weightContributionG = 0.0;
+                ing.kcalContribution    = 0.0;
+                matchedCount++;  // conta come matched per la coverage
+            } else if (match != null) {
                 CreaFood food = match.food;
                 ing.creaCode       = food.code;
                 ing.creaNameIt     = food.nameIt;

@@ -24,13 +24,28 @@ public class IngredientMatcher {
     }
 
     /**
+     * Ingredienti condimento/acqua senza codice CREA autonomo e 0 kcal rilevanti.
+     * Vengono trattati come "matched silenzioso": yield_factor=0, kcal=0,
+     * NON contano come unmatched nella coverage.
+     */
+    private static final Set<String> IGNORABLE = Set.of(
+            "sale", "sale fino", "sale grosso", "sale marino", "sale integrale",
+            "acqua", "acqua fredda", "acqua calda", "bicarbonato", "lievito in polvere"
+    );
+
+    /**
      * Tenta di matchare il nome ingrediente a un CreaFood.
-     * Priorita': hint refs > exact > contains > token overlap.
-     * Ritorna null se nessun match supera soglia 0.5.
+     * Priorita': ignorable list > hint refs > exact > contains > token overlap.
+     * Ritorna null se nessun match supera la soglia.
      */
     public MatchResult match(String ingredientName, List<CuratedRecipeTargetCreaRef> hintRefs) {
         String normIngredient = normalize(ingredientName);
         if (normIngredient.isEmpty()) return null;
+
+        // 0. Ingredienti ignorabili (sale, acqua, bicarbonato...): 0 kcal, 0 peso,
+        //    ma NON contano come unmatched → restituisce un match fittizio con food=null.
+        //    Il chiamante deve gestire food==null come "ignorabile".
+        if (IGNORABLE.contains(normIngredient)) return new MatchResult(null, 1.0, "ignorable");
 
         // 1. Hint match: se il nome ingrediente e' vicino a uno dei ref esistenti.
         //    Confronta sia contro il label umano (es. "olio EVO") sia contro il nome CREA
@@ -66,7 +81,9 @@ public class IngredientMatcher {
                 score = 0.80; method = "contains_ingredient";
             } else {
                 double overlap = tokenOverlap(normIngredient, normCrea);
-                if (overlap >= 0.5) { score = overlap * 0.75; method = "token_overlap"; }
+                // soglia 0.60: evita falsi positivi borderline come
+                // "vino bianco secco" → "Sogliola al vino bianco" (overlap 0.50)
+                if (overlap >= 0.60) { score = overlap * 0.75; method = "token_overlap"; }
                 else continue;
             }
 
