@@ -1,12 +1,18 @@
 package it.dsms.grabber.db;
 
 import it.dsms.grabber.crea.CreaFood;
+import it.dsms.grabber.curated.CuratedRecipeTarget;
+import it.dsms.grabber.curated.CuratedRecipeTargetCreaRef;
 import it.dsms.grabber.curated.DishAmbiguityRule;
 import it.dsms.grabber.curated.MealContextCorrection;
+import it.dsms.grabber.curated.RecipeCandidate;
+import it.dsms.grabber.curated.RecipeIngredientCandidate;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostgresConnector {
 
@@ -122,6 +128,103 @@ public class PostgresConnector {
         }
     }
 
+    public void upsertRecipeTarget(CuratedRecipeTarget t) throws SQLException {
+        String sql = """
+                INSERT INTO curated_recipe_targets
+                    (target_id, dish_query, display_name, meal_area, priority,
+                     crea_feasibility, notes, source_file, source_line, review_status)
+                VALUES (?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT (target_id) DO UPDATE SET
+                    dish_query       = EXCLUDED.dish_query,
+                    display_name     = EXCLUDED.display_name,
+                    meal_area        = EXCLUDED.meal_area,
+                    priority         = EXCLUDED.priority,
+                    crea_feasibility = EXCLUDED.crea_feasibility,
+                    notes            = EXCLUDED.notes,
+                    source_file      = EXCLUDED.source_file,
+                    source_line      = EXCLUDED.source_line,
+                    review_status    = EXCLUDED.review_status,
+                    updated_at       = now()
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, t.targetId);
+            ps.setString(2, t.dishQuery);
+            ps.setString(3, t.displayName);
+            ps.setString(4, t.mealArea);
+            setNullableInteger(ps, 5, t.priority);
+            ps.setString(6, t.creaFeasibility);
+            ps.setString(7, t.notes);
+            ps.setString(8, t.sourceFile);
+            setNullableInteger(ps, 9, t.sourceLine);
+            ps.setString(10, t.reviewStatus != null ? t.reviewStatus : "pending");
+            ps.executeUpdate();
+        }
+    }
+
+    public void replaceRecipeTargetRefs(String targetId, List<CuratedRecipeTargetCreaRef> refs) throws SQLException {
+        boolean oldAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            try (PreparedStatement delete = connection.prepareStatement(
+                    "DELETE FROM curated_recipe_target_crea_refs WHERE target_id = ?")) {
+                delete.setString(1, targetId);
+                delete.executeUpdate();
+            }
+
+            String sql = """
+                    INSERT INTO curated_recipe_target_crea_refs
+                        (target_id, crea_code, ref_order, label, role, is_primary)
+                    VALUES (?,?,?,?,?,?)
+                    """;
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                for (CuratedRecipeTargetCreaRef ref : refs) {
+                    ps.setString(1, targetId);
+                    ps.setString(2, ref.creaCode);
+                    ps.setInt(3, ref.refOrder);
+                    ps.setString(4, ref.label);
+                    ps.setString(5, ref.role);
+                    ps.setBoolean(6, ref.primary);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(oldAutoCommit);
+        }
+    }
+
+    public void updateRecipeTargetReviewStatuses(Map<String, String> statusesByTargetId) throws SQLException {
+        if (statusesByTargetId.isEmpty()) return;
+
+        boolean oldAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            String sql = """
+                    UPDATE curated_recipe_targets
+                    SET review_status = ?, updated_at = now()
+                    WHERE target_id = ?
+                    """;
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                for (Map.Entry<String, String> entry : statusesByTargetId.entrySet()) {
+                    ps.setString(1, entry.getValue());
+                    ps.setString(2, entry.getKey());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(oldAutoCommit);
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Read
     // -------------------------------------------------------------------------
@@ -204,6 +307,296 @@ public class PostgresConnector {
         return result;
     }
 
+    public List<CuratedRecipeTarget> findRecipeTargets(boolean includePending) throws SQLException {
+        String sql = """
+                SELECT target_id, dish_query, display_name, meal_area, priority,
+                       crea_feasibility, notes, source_file, source_line, review_status
+                FROM curated_recipe_targets
+                WHERE (? OR review_status = 'approved')
+                ORDER BY meal_area, priority NULLS LAST, target_id
+                """;
+        Map<String, CuratedRecipeTarget> targets = new LinkedHashMap<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setBoolean(1, includePending);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CuratedRecipeTarget t = new CuratedRecipeTarget();
+                    t.targetId        = rs.getString("target_id");
+                    t.dishQuery       = rs.getString("dish_query");
+                    t.displayName     = rs.getString("display_name");
+                    t.mealArea        = rs.getString("meal_area");
+                    t.priority        = nullableInteger(rs, "priority");
+                    t.creaFeasibility = rs.getString("crea_feasibility");
+                    t.notes           = rs.getString("notes");
+                    t.sourceFile      = rs.getString("source_file");
+                    t.sourceLine      = nullableInteger(rs, "source_line");
+                    t.reviewStatus    = rs.getString("review_status");
+                    targets.put(t.targetId, t);
+                }
+            }
+        }
+
+        if (targets.isEmpty()) return new ArrayList<>();
+
+        String refsSql = """
+                SELECT r.target_id, r.crea_code, r.ref_order, r.label, r.role,
+                       r.is_primary, c.name_it AS crea_name_it
+                FROM curated_recipe_target_crea_refs r
+                JOIN crea_foods c ON c.code = r.crea_code
+                ORDER BY r.target_id, r.ref_order
+                """;
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(refsSql)) {
+            while (rs.next()) {
+                String targetId = rs.getString("target_id");
+                CuratedRecipeTarget target = targets.get(targetId);
+                if (target == null) continue;
+
+                CuratedRecipeTargetCreaRef ref = new CuratedRecipeTargetCreaRef();
+                ref.targetId    = targetId;
+                ref.creaCode    = rs.getString("crea_code").trim();
+                ref.refOrder    = rs.getInt("ref_order");
+                ref.label       = rs.getString("label");
+                ref.role        = rs.getString("role");
+                ref.primary     = rs.getBoolean("is_primary");
+                ref.creaNameIt  = rs.getString("crea_name_it");
+                target.creaRefs.add(ref);
+            }
+        }
+        return new ArrayList<>(targets.values());
+    }
+
+    /**
+     * Trova un singolo target per ID (con i suoi crea_refs).
+     */
+    public CuratedRecipeTarget findRecipeTargetById(String targetId) throws SQLException {
+        String sql = """
+                SELECT target_id, dish_query, display_name, meal_area, priority,
+                       crea_feasibility, notes, source_file, source_line, review_status
+                FROM curated_recipe_targets
+                WHERE target_id = ?
+                LIMIT 1
+                """;
+        CuratedRecipeTarget target = null;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, targetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    target = new CuratedRecipeTarget();
+                    target.targetId        = rs.getString("target_id");
+                    target.dishQuery       = rs.getString("dish_query");
+                    target.displayName     = rs.getString("display_name");
+                    target.mealArea        = rs.getString("meal_area");
+                    target.priority        = nullableInteger(rs, "priority");
+                    target.creaFeasibility = rs.getString("crea_feasibility");
+                    target.notes           = rs.getString("notes");
+                    target.sourceFile      = rs.getString("source_file");
+                    target.sourceLine      = nullableInteger(rs, "source_line");
+                    target.reviewStatus    = rs.getString("review_status");
+                }
+            }
+        }
+        if (target == null) return null;
+
+        String refsSql = """
+                SELECT r.target_id, r.crea_code, r.ref_order, r.label, r.role,
+                       r.is_primary, c.name_it AS crea_name_it
+                FROM curated_recipe_target_crea_refs r
+                JOIN crea_foods c ON c.code = r.crea_code
+                WHERE r.target_id = ?
+                ORDER BY r.ref_order
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(refsSql)) {
+            ps.setString(1, targetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CuratedRecipeTargetCreaRef ref = new CuratedRecipeTargetCreaRef();
+                    ref.targetId   = rs.getString("target_id");
+                    ref.creaCode   = rs.getString("crea_code").trim();
+                    ref.refOrder   = rs.getInt("ref_order");
+                    ref.label      = rs.getString("label");
+                    ref.role       = rs.getString("role");
+                    ref.primary    = rs.getBoolean("is_primary");
+                    ref.creaNameIt = rs.getString("crea_name_it");
+                    target.creaRefs.add(ref);
+                }
+            }
+        }
+        return target;
+    }
+
+    /**
+     * Inserisce o aggiorna un RecipeCandidate (upsert su candidate_id).
+     */
+    public void upsertRecipeCandidate(RecipeCandidate c) throws SQLException {
+        String sql = """
+                INSERT INTO recipe_candidates
+                    (candidate_id, target_id, dish_name, declared_servings,
+                     computed_weight_g, kcal_per_100g, protein_per_100g, carbs_per_100g,
+                     fat_per_100g, fiber_per_100g, default_portion_g, crea_coverage_pct,
+                     confidence_level, source_ref, extraction_method,
+                     llm_model, llm_prompt_version, review_status, quality_flags)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT (candidate_id) DO UPDATE SET
+                    target_id          = EXCLUDED.target_id,
+                    dish_name          = EXCLUDED.dish_name,
+                    declared_servings  = EXCLUDED.declared_servings,
+                    computed_weight_g  = EXCLUDED.computed_weight_g,
+                    kcal_per_100g      = EXCLUDED.kcal_per_100g,
+                    protein_per_100g   = EXCLUDED.protein_per_100g,
+                    carbs_per_100g     = EXCLUDED.carbs_per_100g,
+                    fat_per_100g       = EXCLUDED.fat_per_100g,
+                    fiber_per_100g     = EXCLUDED.fiber_per_100g,
+                    default_portion_g  = EXCLUDED.default_portion_g,
+                    crea_coverage_pct  = EXCLUDED.crea_coverage_pct,
+                    confidence_level   = EXCLUDED.confidence_level,
+                    source_ref         = EXCLUDED.source_ref,
+                    extraction_method  = EXCLUDED.extraction_method,
+                    llm_model          = EXCLUDED.llm_model,
+                    llm_prompt_version = EXCLUDED.llm_prompt_version,
+                    review_status      = EXCLUDED.review_status,
+                    quality_flags      = EXCLUDED.quality_flags,
+                    updated_at         = now()
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1,  c.candidateId);
+            if (c.targetId != null) ps.setString(2, c.targetId);
+            else                    ps.setNull(2, Types.VARCHAR);
+            ps.setString(3,  c.dishName);
+            ps.setInt(4,     c.declaredServings);
+            setNullableDouble(ps, 5,  c.computedWeightG);
+            setNullableDouble(ps, 6,  c.kcalPer100g);
+            setNullableDouble(ps, 7,  c.proteinPer100g);
+            setNullableDouble(ps, 8,  c.carbsPer100g);
+            setNullableDouble(ps, 9,  c.fatPer100g);
+            setNullableDouble(ps, 10, c.fiberPer100g);
+            setNullableDouble(ps, 11, c.defaultPortionG);
+            setNullableDouble(ps, 12, c.creaCoveragePct);
+            if (c.confidenceLevel != null) ps.setString(13, c.confidenceLevel);
+            else                           ps.setNull(13, Types.VARCHAR);
+            ps.setString(14, c.sourceRef != null ? c.sourceRef : "internal_curation_llm_assisted");
+            ps.setString(15, c.extractionMethod != null ? c.extractionMethod : "llm_assisted");
+            if (c.llmModel != null) ps.setString(16, c.llmModel);
+            else                    ps.setNull(16, Types.VARCHAR);
+            if (c.llmPromptVersion != null) ps.setString(17, c.llmPromptVersion);
+            else                            ps.setNull(17, Types.VARCHAR);
+            ps.setString(18, c.reviewStatus != null ? c.reviewStatus : "draft");
+            if (c.qualityFlags != null) ps.setString(19, c.qualityFlags);
+            else                        ps.setNull(19, Types.VARCHAR);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Sostituisce gli ingredienti per un candidato (DELETE + INSERT).
+     */
+    public void replaceRecipeIngredients(String candidateId, List<RecipeIngredientCandidate> ingredients)
+            throws SQLException {
+        boolean oldAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            try (PreparedStatement delete = connection.prepareStatement(
+                    "DELETE FROM recipe_ingredient_candidates WHERE candidate_id = ?")) {
+                delete.setString(1, candidateId);
+                delete.executeUpdate();
+            }
+
+            String sql = """
+                    INSERT INTO recipe_ingredient_candidates
+                        (candidate_id, crea_code, ingredient_name_raw, grams_raw,
+                         grams_normalized, yield_factor, weight_contribution_g,
+                         kcal_contribution, match_method, match_confidence,
+                         role, sort_order)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """;
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                for (RecipeIngredientCandidate ing : ingredients) {
+                    ps.setString(1, candidateId);
+                    if (ing.creaCode != null) ps.setString(2, ing.creaCode);
+                    else                      ps.setNull(2, Types.VARCHAR);
+                    ps.setString(3, ing.ingredientNameRaw);
+                    setNullableDouble(ps, 4, ing.gramsRaw);
+                    setNullableDouble(ps, 5, ing.gramsNormalized);
+                    ps.setDouble(6, ing.yieldFactor);
+                    setNullableDouble(ps, 7, ing.weightContributionG);
+                    setNullableDouble(ps, 8, ing.kcalContribution);
+                    if (ing.matchMethod != null) ps.setString(9, ing.matchMethod);
+                    else                         ps.setNull(9, Types.VARCHAR);
+                    setNullableDouble(ps, 10, ing.matchConfidence);
+                    ps.setString(11, ing.role != null ? ing.role : "main");
+                    ps.setInt(12, ing.sortOrder);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(oldAutoCommit);
+        }
+    }
+
+    /**
+     * Legge il summary di un candidato (senza ingredienti) per candidate_id.
+     * Ritorna null se non trovato.
+     */
+    public RecipeCandidate findRecipeCandidateSummary(String candidateId) throws SQLException {
+        String sql = """
+                SELECT candidate_id, target_id, dish_name, declared_servings,
+                       computed_weight_g, kcal_per_100g, protein_per_100g, carbs_per_100g,
+                       fat_per_100g, fiber_per_100g, default_portion_g, crea_coverage_pct,
+                       confidence_level, llm_model, llm_prompt_version,
+                       review_status, quality_flags
+                FROM recipe_candidates
+                WHERE candidate_id = ?
+                LIMIT 1
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, candidateId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                RecipeCandidate c = new RecipeCandidate();
+                c.candidateId      = rs.getString("candidate_id");
+                c.targetId         = rs.getString("target_id");
+                c.dishName         = rs.getString("dish_name");
+                c.declaredServings = rs.getInt("declared_servings");
+                c.computedWeightG  = nullableDouble(rs, "computed_weight_g");
+                c.kcalPer100g      = nullableDouble(rs, "kcal_per_100g");
+                c.proteinPer100g   = nullableDouble(rs, "protein_per_100g");
+                c.carbsPer100g     = nullableDouble(rs, "carbs_per_100g");
+                c.fatPer100g       = nullableDouble(rs, "fat_per_100g");
+                c.fiberPer100g     = nullableDouble(rs, "fiber_per_100g");
+                c.defaultPortionG  = nullableDouble(rs, "default_portion_g");
+                c.creaCoveragePct  = nullableDouble(rs, "crea_coverage_pct");
+                c.confidenceLevel  = rs.getString("confidence_level");
+                c.llmModel         = rs.getString("llm_model");
+                c.llmPromptVersion = rs.getString("llm_prompt_version");
+                c.reviewStatus     = rs.getString("review_status");
+                c.qualityFlags     = rs.getString("quality_flags");
+                return c;
+            }
+        }
+    }
+
+    /**
+     * Aggiorna il review_status di un candidato.
+     * Ritorna true se almeno una riga e' stata aggiornata.
+     */
+    public boolean setRecipeCandidateStatus(String candidateId, String newStatus) throws SQLException {
+        String sql = """
+                UPDATE recipe_candidates
+                SET review_status = ?, updated_at = now()
+                WHERE candidate_id = ?
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            ps.setString(2, candidateId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Lifecycle
     // -------------------------------------------------------------------------
@@ -223,8 +616,18 @@ public class PostgresConnector {
         else               ps.setDouble(idx, value);
     }
 
+    private void setNullableInteger(PreparedStatement ps, int idx, Integer value) throws SQLException {
+        if (value == null) ps.setNull(idx, Types.INTEGER);
+        else               ps.setInt(idx, value);
+    }
+
     private Double nullableDouble(ResultSet rs, String col) throws SQLException {
         double v = rs.getDouble(col);
+        return rs.wasNull() ? null : v;
+    }
+
+    private Integer nullableInteger(ResultSet rs, String col) throws SQLException {
+        int v = rs.getInt(col);
         return rs.wasNull() ? null : v;
     }
 }

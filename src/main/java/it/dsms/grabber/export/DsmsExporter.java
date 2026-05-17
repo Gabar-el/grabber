@@ -3,12 +3,16 @@ package it.dsms.grabber.export;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.dsms.grabber.crea.CreaFood;
+import it.dsms.grabber.curated.CuratedRecipeTarget;
 import it.dsms.grabber.curated.DishAmbiguityRule;
 import it.dsms.grabber.curated.MealContextCorrection;
 import it.dsms.grabber.db.PostgresConnector;
+import it.dsms.grabber.validation.CuratedRecipeTargetsValidator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -57,5 +61,37 @@ public class DsmsExporter {
         List<MealContextCorrection> corrections = db.findAllCorrections();
         mapper.writeValue(outputFile, corrections);
         System.out.printf("Esportate %d meal_context_corrections → %s%n", corrections.size(), outputFile.getAbsolutePath());
+    }
+
+    public void exportRecipeTargets(File outputFile, boolean includePending) throws SQLException, IOException {
+        List<CuratedRecipeTarget> targets = db.findRecipeTargets(includePending);
+
+        CuratedRecipeTargetsValidator validator = new CuratedRecipeTargetsValidator();
+        CuratedRecipeTargetsValidator.ValidationResult validation = validator.validate(targets);
+        for (String warning : validation.warnings) {
+            System.err.println("WARN recipe-targets: " + warning);
+        }
+        if (!validation.ok()) {
+            for (String error : validation.errors) {
+                System.err.println("ERR recipe-targets: " + error);
+            }
+            throw new IllegalStateException("Export recipe targets bloccato: " +
+                    validation.errors.size() + " errori di validazione.");
+        }
+
+        CuratedRecipeTargetsManifest manifest = new CuratedRecipeTargetsManifest();
+        manifest.count = targets.size();
+        manifest.targets = targets;
+
+        String json = mapper.writeValueAsString(manifest);
+        if ("-".equals(outputFile.getPath())) {
+            System.out.print(json);
+            System.err.printf("%nEsportati %d curated_recipe_targets -> stdout%n", manifest.count);
+            System.err.printf("seed_version: %s%n", manifest.seedVersion);
+        } else {
+            Files.writeString(outputFile.toPath(), json, StandardCharsets.UTF_8);
+            System.out.printf("Esportati %d curated_recipe_targets -> %s%n", manifest.count, outputFile.getAbsolutePath());
+            System.out.printf("seed_version: %s%n", manifest.seedVersion);
+        }
     }
 }
