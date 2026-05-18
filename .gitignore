@@ -51,3 +51,7 @@ artifacts
 .claude
 /target
 data
+
+# Seed generati localmente (artefatti di export, non sorgente)
+prepared_dishes_seed.json
+crea_seed.json
