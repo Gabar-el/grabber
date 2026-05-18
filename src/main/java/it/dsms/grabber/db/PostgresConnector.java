@@ -581,6 +581,108 @@ public class PostgresConnector {
     }
 
     /**
+     * Restituisce tutti i recipe_candidates con review_status='approved',
+     * ciascuno completo di lista ingredienti.
+     * Ordinamento: dish_name ASC.
+     */
+    public List<RecipeCandidate> findApprovedCandidatesWithIngredients() throws SQLException {
+        String sql = """
+                SELECT candidate_id, target_id, dish_name, declared_servings,
+                       computed_weight_g, kcal_per_100g, protein_per_100g, carbs_per_100g,
+                       fat_per_100g, fiber_per_100g, default_portion_g,
+                       crea_coverage_pct, confidence_level, source_ref, extraction_method,
+                       llm_model, llm_prompt_version, review_status, quality_flags
+                FROM recipe_candidates
+                WHERE review_status = 'approved'
+                ORDER BY dish_name
+                """;
+        List<RecipeCandidate> candidates = new ArrayList<>();
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                RecipeCandidate c = new RecipeCandidate();
+                c.candidateId      = rs.getString("candidate_id");
+                c.targetId         = rs.getString("target_id");
+                c.dishName         = rs.getString("dish_name");
+                c.declaredServings = rs.getInt("declared_servings");
+                c.computedWeightG  = nullableDouble(rs, "computed_weight_g");
+                c.kcalPer100g      = nullableDouble(rs, "kcal_per_100g");
+                c.proteinPer100g   = nullableDouble(rs, "protein_per_100g");
+                c.carbsPer100g     = nullableDouble(rs, "carbs_per_100g");
+                c.fatPer100g       = nullableDouble(rs, "fat_per_100g");
+                c.fiberPer100g     = nullableDouble(rs, "fiber_per_100g");
+                c.defaultPortionG  = nullableDouble(rs, "default_portion_g");
+                c.creaCoveragePct  = nullableDouble(rs, "crea_coverage_pct");
+                c.confidenceLevel  = rs.getString("confidence_level");
+                c.sourceRef        = rs.getString("source_ref");
+                c.extractionMethod = rs.getString("extraction_method");
+                c.llmModel         = rs.getString("llm_model");
+                c.llmPromptVersion = rs.getString("llm_prompt_version");
+                c.reviewStatus     = rs.getString("review_status");
+                c.qualityFlags     = rs.getString("quality_flags");
+                candidates.add(c);
+            }
+        }
+        if (candidates.isEmpty()) return candidates;
+
+        // Carica gli ingredienti per tutti i candidati in una sola query
+        String ids = candidates.stream()
+                .map(c -> "'" + c.candidateId.replace("'", "''") + "'")
+                .collect(java.util.stream.Collectors.joining(","));
+        String ingsSql = """
+                SELECT i.candidate_id, i.crea_code, i.ingredient_name_raw,
+                       i.grams_raw, i.grams_normalized, i.yield_factor,
+                       i.weight_contribution_g, i.kcal_contribution,
+                       i.match_method, i.match_confidence, i.role, i.sort_order
+                FROM recipe_ingredient_candidates i
+                WHERE i.candidate_id IN (""" + ids + """
+                )
+                ORDER BY i.candidate_id, i.sort_order
+                """;
+        Map<String, RecipeCandidate> byId = candidates.stream()
+                .collect(java.util.stream.Collectors.toMap(c -> c.candidateId, c -> c));
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(ingsSql)) {
+            while (rs.next()) {
+                String cid = rs.getString("candidate_id");
+                RecipeCandidate owner = byId.get(cid);
+                if (owner == null) continue;
+                RecipeIngredientCandidate ing = new RecipeIngredientCandidate();
+                ing.candidateId         = cid;
+                ing.creaCode            = rs.getString("crea_code");
+                ing.ingredientNameRaw   = rs.getString("ingredient_name_raw");
+                ing.gramsRaw            = nullableDouble(rs, "grams_raw");
+                ing.gramsNormalized     = nullableDouble(rs, "grams_normalized");
+                ing.yieldFactor         = rs.getDouble("yield_factor");
+                ing.weightContributionG = nullableDouble(rs, "weight_contribution_g");
+                ing.kcalContribution    = nullableDouble(rs, "kcal_contribution");
+                ing.matchMethod         = rs.getString("match_method");
+                ing.matchConfidence     = nullableDouble(rs, "match_confidence");
+                ing.role                = rs.getString("role");
+                ing.sortOrder           = rs.getInt("sort_order");
+                owner.ingredients.add(ing);
+            }
+        }
+        return candidates;
+    }
+
+    /**
+     * Restituisce una mappa target_id -> meal_area per tutti i target.
+     * Usato dall'export-seed per arricchire ogni piatto con il suo meal_area.
+     */
+    public Map<String, String> findMealAreaByTargetId() throws SQLException {
+        String sql = "SELECT target_id, meal_area FROM curated_recipe_targets";
+        Map<String, String> result = new java.util.HashMap<>();
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                result.put(rs.getString("target_id"), rs.getString("meal_area"));
+            }
+        }
+        return result;
+    }
+
+    /**
      * Aggiorna il review_status di un candidato.
      * Ritorna true se almeno una riga e' stata aggiornata.
      */

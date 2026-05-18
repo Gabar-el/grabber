@@ -8,6 +8,7 @@ import it.dsms.grabber.curated.CuratedRecipeTarget;
 import it.dsms.grabber.curated.CuratedRecipeTargetReviewPromoter;
 import it.dsms.grabber.curated.CurateRecipeCommand;
 import it.dsms.grabber.curated.CsvImporter;
+import it.dsms.grabber.curated.ExportRecipeSeedCommand;
 import it.dsms.grabber.db.PostgresConnector;
 import it.dsms.grabber.export.DsmsExporter;
 
@@ -31,6 +32,7 @@ import java.util.Map;
  *   curate-recipe <dish>    — genera candidato ricetta via LLM e salva nel DB
  *   approve-recipe <id>     — promuove un candidato a approved
  *   reject-recipe  <id>     — segna un candidato come rejected
+ *   export-seed [--out f]   — esporta i candidati approved in prepared_dishes_seed.json
  *
  * Esempi:
  *   java -jar grabber.jar
@@ -75,9 +77,10 @@ public class Main {
             case "curate-recipe"   -> runCurateRecipe(args);
             case "approve-recipe"  -> runApproveRecipe(args);
             case "reject-recipe"   -> runRejectRecipe(args);
+            case "export-seed"     -> runExportSeed(args);
             default                -> {
                 System.err.println("Comando non riconosciuto: " + command);
-                System.err.println("Uso: grabber [grab|export|grab-export|import-curated|export-recipe-targets|review-recipe-targets|export-all|curate-recipe|approve-recipe|reject-recipe] [path]");
+                System.err.println("Uso: grabber [grab|export|grab-export|import-curated|export-recipe-targets|review-recipe-targets|export-all|curate-recipe|approve-recipe|reject-recipe|export-seed] [path]");
                 System.exit(1);
             }
         }
@@ -280,12 +283,14 @@ public class Main {
 
         try (DbHandle db = new DbHandle()) {
             DsmsExporter exporter = new DsmsExporter(db.connector);
-            System.out.println("\n[1/3] crea_seed.json...");
+            System.out.println("\n[1/4] crea_seed.json...");
             exporter.export(new File(dir, "crea_seed.json"));
-            System.out.println("\n[2/3] dish_ambiguity_rules.json...");
+            System.out.println("\n[2/4] dish_ambiguity_rules.json...");
             exporter.exportRules(new File(dir, "dish_ambiguity_rules.json"));
-            System.out.println("\n[3/3] meal_context_corrections.json...");
+            System.out.println("\n[3/4] meal_context_corrections.json...");
             exporter.exportCorrections(new File(dir, "meal_context_corrections.json"));
+            System.out.println("\n[4/4] prepared_dishes_seed.json...");
+            new ExportRecipeSeedCommand(db.connector).execute(new File(dir, "prepared_dishes_seed.json").getAbsolutePath());
         }
         System.out.println("\nExport completato.");
     }
@@ -357,6 +362,18 @@ public class Main {
         String note = args.length > 2 ? args[2] : null;
         try (DbHandle db = new DbHandle()) {
             new ApproveRecipeCommand(db.connector).reject(candidateId, note);
+        }
+    }
+
+    private static void runExportSeed(String[] args) throws Exception {
+        String outputPath = "prepared_dishes_seed.json";
+        for (int i = 1; i < args.length; i++) {
+            if ("--out".equals(args[i]) && i + 1 < args.length) {
+                outputPath = args[++i];
+            }
+        }
+        try (DbHandle db = new DbHandle()) {
+            new ExportRecipeSeedCommand(db.connector).execute(outputPath);
         }
     }
 
