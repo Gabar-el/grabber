@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Master changelog Liquibase per il progetto grabber.
+
+        Tutti i changeset hanno preCondition onFail="MARK_RAN" per garantire
+        idempotenza su un DB già esistente (creato manualmente via schema.sql).
+
+        Ordine di inclusione rispetta le dipendenze FK:
+        crea_foods e curated_recipe_targets devono esistere
+        prima di curated_recipe_target_crea_refs.
+    -->
+
+    <include file="changes/001-crea-foods.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changes/002-yazio-foods.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changes/003-dish-ambiguity-rules.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changes/004-meal-context-corrections.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changes/005-curated-recipe-targets.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changes/006-curated-recipe-target-crea-refs.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changes/007-recipe-candidates.xml"
+             relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

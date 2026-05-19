@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================
+         007 — recipe_candidates + recipe_ingredient_candidates
+         Candidati ricette curate con LLM e relativi ingredienti.
+
+         recipe_candidates:
+           candidate_id PK (crc_ + hash)
+           review_status: draft | reviewable | approved | rejected
+
+         recipe_ingredient_candidates:
+           id SERIAL PK
+           FK → recipe_candidates(candidate_id) ON DELETE CASCADE
+           FK → crea_foods(code) (nullable per ingredienti non matchati)
+         ================================================================ -->
+
+    <!-- recipe_candidates -->
+    <changeSet id="007-create-recipe-candidates" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="recipe_candidates"/></not>
+        </preConditions>
+        <createTable tableName="recipe_candidates">
+            <column name="candidate_id" type="TEXT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="target_id" type="TEXT"/>
+            <column name="dish_name" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="declared_servings" type="INTEGER"
+                    defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="computed_weight_g" type="NUMERIC(8,2)"/>
+            <column name="kcal_per_100g" type="NUMERIC(7,2)"/>
+            <column name="protein_per_100g" type="NUMERIC(7,2)"/>
+            <column name="carbs_per_100g" type="NUMERIC(7,2)"/>
+            <column name="fat_per_100g" type="NUMERIC(7,2)"/>
+            <column name="fiber_per_100g" type="NUMERIC(7,2)"/>
+            <column name="default_portion_g" type="NUMERIC(7,2)"/>
+            <column name="crea_coverage_pct" type="NUMERIC(5,2)"/>
+            <!-- high | medium | low -->
+            <column name="confidence_level" type="TEXT"/>
+            <column name="source_ref" type="TEXT"
+                    defaultValue="internal_curation_llm_assisted">
+                <constraints nullable="false"/>
+            </column>
+            <column name="extraction_method" type="TEXT"
+                    defaultValue="llm_assisted">
+                <constraints nullable="false"/>
+            </column>
+            <column name="llm_model" type="TEXT"/>
+            <column name="llm_prompt_version" type="TEXT"/>
+            <!-- draft | reviewable | approved | rejected -->
+            <column name="review_status" type="TEXT"
+                    defaultValue="draft">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quality_flags" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+            <column name="updated_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="007-add-recipe-candidates-fk-target" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="recipe_candidates"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='recipe_candidates'
+                AND constraint_name='recipe_candidates_target_id_fkey'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="recipe_candidates"
+            baseColumnNames="target_id"
+            referencedTableName="curated_recipe_targets"
+            referencedColumnNames="target_id"
+            constraintName="recipe_candidates_target_id_fkey"/>
+    </changeSet>
+
+    <changeSet id="007-add-recipe-candidates-check-confidence" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="recipe_candidates"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='recipe_candidates'
+                AND constraint_name='recipe_candidates_confidence_level_check'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE recipe_candidates
+            ADD CONSTRAINT recipe_candidates_confidence_level_check
+            CHECK (confidence_level IN ('high','medium','low'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="007-add-recipe-candidates-check-review-status" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="recipe_candidates"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='recipe_candidates'
+                AND constraint_name='recipe_candidates_review_status_check'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE recipe_candidates
+            ADD CONSTRAINT recipe_candidates_review_status_check
+            CHECK (review_status IN ('draft','reviewable','approved','rejected'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="007-create-recipe-candidates-indexes" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_recipe_candidates_target_id"/></not>
+        </preConditions>
+        <createIndex tableName="recipe_candidates"
+                     indexName="idx_recipe_candidates_target_id">
+            <column name="target_id"/>
+        </createIndex>
+        <createIndex tableName="recipe_candidates"
+                     indexName="idx_recipe_candidates_review_status">
+            <column name="review_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- recipe_ingredient_candidates -->
+    <changeSet id="007-create-recipe-ingredient-candidates" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="recipe_ingredient_candidates"/></not>
+        </preConditions>
+        <createTable tableName="recipe_ingredient_candidates">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="candidate_id" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <!-- nullable: ingredienti non matchati a CREA non hanno crea_code -->
+            <column name="crea_code" type="TEXT"/>
+            <column name="ingredient_name_raw" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="grams_raw" type="NUMERIC(7,2)"/>
+            <column name="grams_normalized" type="NUMERIC(7,2)"/>
+            <column name="yield_factor" type="NUMERIC(6,3)"
+                    defaultValueNumeric="1.000">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weight_contribution_g" type="NUMERIC(7,2)"/>
+            <column name="kcal_contribution" type="NUMERIC(7,2)"/>
+            <column name="match_method" type="TEXT"/>
+            <column name="match_confidence" type="NUMERIC(5,3)"/>
+            <column name="role" type="TEXT" defaultValue="main"/>
+            <column name="sort_order" type="INTEGER"
+                    defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="007-add-recipe-ingredient-candidates-fk-candidate" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="recipe_ingredient_candidates"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='recipe_ingredient_candidates'
+                AND constraint_name='recipe_ingredient_candidates_candidate_id_fkey'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="recipe_ingredient_candidates"
+            baseColumnNames="candidate_id"
+            referencedTableName="recipe_candidates"
+            referencedColumnNames="candidate_id"
+            onDelete="CASCADE"
+            constraintName="recipe_ingredient_candidates_candidate_id_fkey"/>
+    </changeSet>
+
+    <changeSet id="007-add-recipe-ingredient-candidates-fk-crea" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="recipe_ingredient_candidates"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='recipe_ingredient_candidates'
+                AND constraint_name='recipe_ingredient_candidates_crea_code_fkey'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="recipe_ingredient_candidates"
+            baseColumnNames="crea_code"
+            referencedTableName="crea_foods"
+            referencedColumnNames="code"
+            constraintName="recipe_ingredient_candidates_crea_code_fkey"/>
+    </changeSet>
+
+    <changeSet id="007-create-recipe-ingredient-candidates-indexes" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_recipe_ingredient_candidates_candidate"/></not>
+        </preConditions>
+        <createIndex tableName="recipe_ingredient_candidates"
+                     indexName="idx_recipe_ingredient_candidates_candidate">
+            <column name="candidate_id"/>
+        </createIndex>
+        <createIndex tableName="recipe_ingredient_candidates"
+                     indexName="idx_recipe_ingredient_candidates_crea">
+            <column name="crea_code"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

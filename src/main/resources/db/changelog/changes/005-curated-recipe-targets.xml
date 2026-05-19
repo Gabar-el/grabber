@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================
+         005 — curated_recipe_targets
+         Backlog dei piatti da curare (1051 target).
+         Ogni target ha un dish_query, meal_area, crea_feasibility.
+         review_status: pending | approved | rejected | needs_review
+         ================================================================ -->
+    <changeSet id="005-create-curated-recipe-targets" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="curated_recipe_targets"/></not>
+        </preConditions>
+        <createTable tableName="curated_recipe_targets">
+            <column name="target_id" type="TEXT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dish_query" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meal_area" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="INTEGER"/>
+            <column name="crea_feasibility" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT"/>
+            <column name="source_file" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_line" type="INTEGER"/>
+            <column name="review_status" type="TEXT"
+                    defaultValue="pending">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+            <column name="updated_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="005-add-curated-recipe-targets-check-meal-area" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_targets"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_targets'
+                AND constraint_name='curated_recipe_targets_meal_area_check'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE curated_recipe_targets
+            ADD CONSTRAINT curated_recipe_targets_meal_area_check
+            CHECK (meal_area IN ('antipasto','primo','secondo','contorno','spuntino'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="005-add-curated-recipe-targets-check-feasibility" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_targets"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_targets'
+                AND constraint_name='curated_recipe_targets_feasibility_check'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE curated_recipe_targets
+            ADD CONSTRAINT curated_recipe_targets_feasibility_check
+            CHECK (crea_feasibility IN ('high','medium','low'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="005-add-curated-recipe-targets-check-review-status" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_targets"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_targets'
+                AND constraint_name='curated_recipe_targets_review_status_check'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE curated_recipe_targets
+            ADD CONSTRAINT curated_recipe_targets_review_status_check
+            CHECK (review_status IN ('pending','approved','rejected','needs_review'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="005-create-curated-recipe-targets-indexes" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_curated_recipe_targets_review_status"/></not>
+        </preConditions>
+        <createIndex tableName="curated_recipe_targets"
+                     indexName="idx_curated_recipe_targets_review_status">
+            <column name="review_status"/>
+        </createIndex>
+        <createIndex tableName="curated_recipe_targets"
+                     indexName="idx_curated_recipe_targets_meal_area">
+            <column name="meal_area"/>
+        </createIndex>
+        <createIndex tableName="curated_recipe_targets"
+                     indexName="idx_curated_recipe_targets_feasibility">
+            <column name="crea_feasibility"/>
+        </createIndex>
+        <createIndex tableName="curated_recipe_targets"
+                     indexName="idx_curated_recipe_targets_source_file">
+            <column name="source_file"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

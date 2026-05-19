@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dsms_grabber
+    username: grabber
+    password: grabber_pw
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Liquibase gestisce lo schema, JPA solo valida
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY}   # da environment, mai hardcoded
+  model: claude-sonnet-4-5
+
+logging:
+  level:
+    it.dsms.grabber: INFO
+    org.hibernate.SQL: WARN

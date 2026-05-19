@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================
+         004 — meal_context_corrections
+         Fattori correttivi per contesto pasto (home/canteen/restaurant/social).
+         Usato da MealContextCorrection.java nel motore di curation.
+         ================================================================ -->
+    <changeSet id="004-create-meal-context-corrections" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="meal_context_corrections"/></not>
+        </preConditions>
+        <createTable tableName="meal_context_corrections">
+            <!-- home | canteen | restaurant | social -->
+            <column name="context" type="TEXT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kcal_multiplier" type="NUMERIC(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="flat_extra_per_meal" type="NUMERIC(6,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="range_widen_pct" type="NUMERIC(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- 0 | 1 | 2 -->
+            <column name="confidence_penalty" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note_template" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_ref" type="TEXT"/>
+            <column name="curated_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

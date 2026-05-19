@@ -1,0 +1,11 @@
+spring:
+  jpa:
+    show-sql: true
+  liquibase:
+    drop-first: false             # mai true in dev condiviso
+
+logging:
+  level:
+    it.dsms.grabber: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE

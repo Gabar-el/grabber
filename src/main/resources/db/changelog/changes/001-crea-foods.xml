@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================
+         001 — crea_foods
+         Tabella degli alimenti del database nutrizionale CREA (INRAN).
+         ~900 righe caricati via comando grab / grab-export.
+         ================================================================ -->
+    <changeSet id="001-create-crea-foods" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="crea_foods"/></not>
+        </preConditions>
+        <createTable tableName="crea_foods">
+            <column name="code" type="CHAR(6)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name_it" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_en" type="TEXT"/>
+            <column name="name_sci" type="TEXT"/>
+            <column name="category" type="TEXT"/>
+            <column name="kcal" type="NUMERIC(7,2)"/>
+            <column name="protein_g" type="NUMERIC(7,2)"/>
+            <column name="carbs_g" type="NUMERIC(7,2)"/>
+            <column name="fat_g" type="NUMERIC(7,2)"/>
+            <column name="fiber_g" type="NUMERIC(7,2)"/>
+            <column name="water_g" type="NUMERIC(7,2)"/>
+            <column name="portion_g" type="NUMERIC(7,2)"/>
+            <column name="scraped_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

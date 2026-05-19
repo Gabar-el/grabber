@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================
+         006 — curated_recipe_target_crea_refs
+         Mapping N:M tra target e codici CREA di riferimento.
+         FK → curated_recipe_targets(target_id) ON DELETE CASCADE
+         FK → crea_foods(code)
+         PK composita: (target_id, crea_code)
+         UNIQUE: (target_id, ref_order) per ordinamento deterministico
+         ================================================================ -->
+    <changeSet id="006-create-curated-recipe-target-crea-refs" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="curated_recipe_target_crea_refs"/></not>
+        </preConditions>
+        <createTable tableName="curated_recipe_target_crea_refs">
+            <column name="target_id" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="crea_code" type="CHAR(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ref_order" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="TEXT"/>
+            <column name="role" type="TEXT"/>
+            <column name="is_primary" type="BOOLEAN"
+                    defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="006-add-curated-recipe-target-crea-refs-pk" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_target_crea_refs"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_target_crea_refs'
+                AND constraint_type='PRIMARY KEY'
+            </sqlCheck>
+        </preConditions>
+        <addPrimaryKey tableName="curated_recipe_target_crea_refs"
+                       columnNames="target_id,crea_code"
+                       constraintName="curated_recipe_target_crea_refs_pkey"/>
+    </changeSet>
+
+    <changeSet id="006-add-curated-recipe-target-crea-refs-fk-target" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_target_crea_refs"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_target_crea_refs'
+                AND constraint_name='curated_recipe_target_crea_refs_target_id_fkey'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="curated_recipe_target_crea_refs"
+            baseColumnNames="target_id"
+            referencedTableName="curated_recipe_targets"
+            referencedColumnNames="target_id"
+            onDelete="CASCADE"
+            constraintName="curated_recipe_target_crea_refs_target_id_fkey"/>
+    </changeSet>
+
+    <changeSet id="006-add-curated-recipe-target-crea-refs-fk-crea" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_target_crea_refs"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_target_crea_refs'
+                AND constraint_name='curated_recipe_target_crea_refs_crea_code_fkey'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="curated_recipe_target_crea_refs"
+            baseColumnNames="crea_code"
+            referencedTableName="crea_foods"
+            referencedColumnNames="code"
+            constraintName="curated_recipe_target_crea_refs_crea_code_fkey"/>
+    </changeSet>
+
+    <changeSet id="006-add-curated-recipe-target-crea-refs-check-order" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_target_crea_refs"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_target_crea_refs'
+                AND constraint_name='curated_recipe_target_crea_refs_order_check'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE curated_recipe_target_crea_refs
+            ADD CONSTRAINT curated_recipe_target_crea_refs_order_check
+            CHECK (ref_order > 0);
+        </sql>
+    </changeSet>
+
+    <changeSet id="006-add-curated-recipe-target-crea-refs-unique-order" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="curated_recipe_target_crea_refs"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name='curated_recipe_target_crea_refs'
+                AND constraint_name='curated_recipe_target_crea_refs_order_unique'
+            </sqlCheck>
+        </preConditions>
+        <addUniqueConstraint
+            tableName="curated_recipe_target_crea_refs"
+            columnNames="target_id,ref_order"
+            constraintName="curated_recipe_target_crea_refs_order_unique"/>
+    </changeSet>
+
+    <changeSet id="006-create-curated-recipe-target-crea-refs-indexes" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_curated_recipe_target_crea_refs_crea_code"/></not>
+        </preConditions>
+        <createIndex tableName="curated_recipe_target_crea_refs"
+                     indexName="idx_curated_recipe_target_crea_refs_crea_code">
+            <column name="crea_code"/>
+        </createIndex>
+        <createIndex tableName="curated_recipe_target_crea_refs"
+                     indexName="idx_curated_recipe_target_crea_refs_target_id">
+            <column name="target_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================
+         003 — dish_ambiguity_rules
+         Regole per rilevare e correggere ambiguità nei nomi piatti.
+         Esempio: "pollo al forno" può includere contorno o meno.
+         Usato da DishAmbiguityRule.java nel motore di curation.
+         ================================================================ -->
+    <changeSet id="003-create-dish-ambiguity-rules" author="dsms">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dish_ambiguity_rules"/></not>
+        </preConditions>
+        <createTable tableName="dish_ambiguity_rules">
+            <column name="rule_id" type="TEXT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <!-- 'category' | 'food_id' -->
+            <column name="target_kind" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_value" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <!-- 0.00 = applica sempre -->
+            <column name="threshold_ratio" type="NUMERIC(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="correction_factor" type="NUMERIC(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="range_min_factor" type="NUMERIC(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="range_max_factor" type="NUMERIC(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- 0 | 1 | 2 -->
+            <column name="confidence_penalty" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note_template" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_ref" type="TEXT"/>
+            <column name="curated_at" type="TIMESTAMPTZ"
+                    defaultValueComputed="now()"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
