@@ -1,16 +1,16 @@
 package it.dsms.grabber;
 
-import it.dsms.grabber.crea.CreaDetailScraper;
-import it.dsms.grabber.crea.CreaFood;
-import it.dsms.grabber.crea.CreaIdFetcher;
-import it.dsms.grabber.curated.ApproveRecipeCommand;
-import it.dsms.grabber.curated.CuratedRecipeTarget;
-import it.dsms.grabber.curated.CuratedRecipeTargetReviewPromoter;
-import it.dsms.grabber.curated.CurateRecipeCommand;
-import it.dsms.grabber.curated.CsvImporter;
-import it.dsms.grabber.curated.ExportRecipeSeedCommand;
-import it.dsms.grabber.db.PostgresConnector;
-import it.dsms.grabber.export.DsmsExporter;
+import it.dsms.grabber.engine.crea.CreaDetailScraper;
+import it.dsms.grabber.engine.crea.CreaFood;
+import it.dsms.grabber.engine.crea.CreaIdFetcher;
+import it.dsms.grabber.engine.curated.ApproveRecipeCommand;
+import it.dsms.grabber.engine.curated.CuratedRecipeTarget;
+import it.dsms.grabber.engine.curated.CuratedRecipeTargetReviewPromoter;
+import it.dsms.grabber.engine.curated.CurateRecipeCommand;
+import it.dsms.grabber.engine.curated.CsvImporter;
+import it.dsms.grabber.engine.curated.ExportRecipeSeedCommand;
+import it.dsms.grabber.engine.db.PostgresConnector;
+import it.dsms.grabber.engine.export.DsmsExporter;
 
 import java.sql.SQLException;
 import org.jsoup.Jsoup;
